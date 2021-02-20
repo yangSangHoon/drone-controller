@@ -6,18 +6,7 @@ kindFramework.service( 'SockManagerService', function( $rootScope, BroadcastAPI,
 	this.connect = function(obj){
 		var _this = this;
 
-		/*socket = io('127.0.0.1:4000');
-		socket.on('connection', function(socket){
-			console.log('a user connected');
-
-			socket.on('disconnect', function(){
-				console.log('user disconnected');
-			});
-
-			socket.on('message', function( message ){
-				_this.onMessage( message )
-			});
-		});	*/
+		return
 
 		if( ws !== null ) return;
 
