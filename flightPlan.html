@@ -1,0 +1,344 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <!-- <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"> -->
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1.0, user-scalable=no">
+    <title>{{title}}</title>
+    
+    <script type="text/ng-template" src="views/home/home.html"></script>
+	
+    <!-- build:css styles/customs.css -->
+    <link href="styles/reset.css" rel="stylesheet">
+    <link href="styles/login.css" rel="stylesheet">
+    <link href="styles/jwsm.css" rel="stylesheet">
+    <link href="kind/common_modules/kind_client_cm_strm-display/display.css" rel="stylesheet">
+    <!-- endbuild -->
+
+</head>
+<body onload="init()">
+    <div data-ng-view class="wrap" ng-controller="wrapController" style="visibility:hidden;">
+    		<div id="wrapper" class="home_wrap" ng-controller="flightPlanController">
+
+			<div id="header"  ng-controller="headerController">
+				<div class="header">
+					<ul class="area1 line">
+						<li class="info"><a href="" ng-click="showInfo()"></a></li>
+						<li class="home"><a href="home.html"></a></li>
+						<li class="plan"><a href="#"></a></li>
+					</ul>
+					<ul class="area2">
+						<li class="gps">
+							<label>GPS</label>
+							<span>({{gpsNum}}D)</span>
+						</li>
+						<li class="{{signalClass}}">
+							{{signal}}%
+						</li>
+						<li class="{{batteryClass}}">
+							{{remaining}}%
+						</li>
+						<li class="time">
+							{{play_minute}}{{ 'MINUTE' | translate }} {{play_second}}{{ 'SECOND' | translate }}
+						</li>
+					</ul>
+					<ul class="fr left_line">
+						<li class="drone">
+							UAV1
+						</li>
+						<li class="user">
+							<a href="" ng-click="showLogoutPop()">UAV1</a>
+							<div class="logout_pop">
+								<div class="user">
+									<span>UAV1</span>{{ 'DEAR' | translate }}
+									<a href="" ng-click="exitLogoutPop()"></a>
+								</div>
+								<a href="" class="btn_logout" ng-click="logout()">{{ 'LOGOUT' | translate }}</a>
+								<i></i>
+							</div>
+						</li>
+						<li class="emergency_stop">
+							<a href="" ng-click="emergencyStop()">{{ 'SCRAM' | translate }}</a>
+						</li>
+						<li class="setting">
+							<a href="" ng-click="settingClick()"></a>
+						</li>
+					</ul>
+					
+				</div>
+				<div class="info_area">
+					<div class="info_con">
+						<ul>
+							<li>
+								<h3>GPS</h3>
+								<p>
+									LAT {{lat}}<br/>
+									LNG {{lng}}<br/>
+									ALT {{alt}} m
+								</p>
+							</li>
+							<li>
+								<h3>mA</h3>
+								<p>
+									{{am | number}}mA
+								</p>
+							</li>
+							<li>
+								<h3>{{ 'TOTAL_FLY_TIME' | translate }}</h3>
+								<p>
+								{{total_hour}}{{ 'HOUR' | translate }} {{total_minute}}{{ 'MINUTE' | translate }} {{total_second}}{{ 'SECOND' | translate }}
+								</p>
+							</li>
+						</ul>
+						<a href="" class="arrow" ng-click="hide()"></a>
+					</div>
+				</div>
+			</div>
+
+			<div class="main_map" ng-controller="mainMapController" >
+				<div id="mapArea"></div>
+				<div id="drone" class="missionDrone"></div>
+				<div class="btn_edit {{editClass}}" ng-click="onClickPlan()" ng-show="isOnline" id="mapEditBtn"></div>
+				<div id="waypoint_bar">
+				    <div class="title" ng-hide="isHide">
+				        <div class="altitude"><span>Altitude</span> (m)</div>
+				        <div class="speed"><span>Speed</span> (km/h)</div>
+				    </div>
+				    <div class="position">
+				        <ul id="bollContainer">
+				            <li ng-repeat="data in datas | limitTo:datas.length-1" ng-style="{width:data.arrignDist + '%'}">
+				                <div class="boll" ng-click="modifyWayPoint( data.index)" >{{data.number}}</div>
+				                <div class="altitude" ng-hide="isHide">{{data.altitude}}m</div>
+				                <div class="speed" ng-hide="isHide">{{data.speed}}km/h</div>
+				            </li>
+				        </ul>
+				        <div class="last" ng-if="datas.length > 0">
+				            <div class="boll"  ng-click="modifyWayPoint( datas[datas.length-1].index )">
+				                {{totalLength}}
+				            </div>
+				            <div class="altitude" ng-hide="isHide">{{datas[datas.length-1].altitude}}m</div>
+				            <div class="speed" ng-hide="isHide">{{datas[datas.length-1].speed}}km/h</div>
+				        </div>
+
+				        <div class="way_line"  ng-style="{width:wayLineWidth + 'px'}">
+				                <div class="move_line" ng-style="{width:moveDist + '%'}"></div>
+				        </div>
+
+				    </div>
+
+				    <div class="flight_time" ng-hide="!isHide">
+				        <div class="title">Flight Time</div>
+				        <div class="time">{{flightTime.time}}, {{flightTime.meter}}m</div>
+				    </div>
+				</div>
+
+				<!--
+				Home에서 Footer가 Video만큼 크기를 가져야 하지만
+				구조상 그렇게 할 수 없어서 위에 레이어로 씌움
+				-->
+				<div class="mask" ng-hide="!isHide"></div>
+
+				<div class="mission_bottom_btns">
+				    <div id="missionStart">
+				        <a href="" class="btn_start" ng-click="startMission()">{{ 'START_MISSION' | translate }}</a>
+				    </div>
+				    <div id="missionStop" style="display:none;">
+				        <a href="" class="btn_stop" ng-click="stopMission()">{{ 'STOP_MISSION' | translate }}</a>
+				        <div class="small">
+				            <a href="" class="btn_home" ng-click="goHome()"><i></i> {{ 'RETURN_TO_HOME' | translate }}</a>
+				            <a href="" class="btn_hovering" ng-click="goHovering()"><i></i> {{hovering}}</a>
+				        </div>
+				    </div>
+				    <div id="autoModeBtns" style="display:none;">
+				        <a href="" class="btn_stop" ng-click="stopMission()">{{ 'STOP' | translate }}정지</a>
+				        <div class="small">
+				            <a href="" class="btn_home" ng-click="goHome()"><i></i> {{ 'RETURN_TO_HOME' | translate }}</a>
+				            <a href="" class="btn_hovering" ng-click="goHovering()"><i></i> {{hovering}}</a>
+				        </div>
+				    </div>
+				</div>
+			</div>
+
+
+			<div class="command_btn_area" ng-controller="commandBtnAreaController">
+				<ul class="auto_mission">
+					<li ng-class="autoClass"><a href="" ng-click="goAuto()" class="btn_auto"></a></li>
+					<li ng-class="missionClass"><a href="" ng-click="goMission()" class="btn_mission"></a></li>
+				</ul>
+				<ul class="btn_con">
+					<li ng-show="isOnline"><a href="" ng-click="saveMap()" class="kind_menu" >{{ 'SAVE_MAP' | translate }}</a></li>
+					<li ng-show="isOnline"><a href="" ng-click="cameraPoint()" class="kind_menu">{{ 'CAMERA_POINT' | translate }}</a></li>
+					<li ng-show="isOnline && isMission"><a href="" ng-click="clearAll()" class="kind_menu">{{ 'ALL_CLEAR' | translate }}</a></li>
+					<li ng-show="isMission"><a href="" ng-click="download()" class="kind_menu">{{ 'DOWNLOAD' | translate }}</a></li>
+					<li ng-show="isOnline && isMission">
+						<a href="" class="kind_menu is_sub">{{ 'TEMPLATE' | translate }}</a>
+						<div class="sub">
+							<div class="template_list" ng-controller="templateAreaController">
+								<ul>
+									<li><a href="" ng-click="makeTemplate(1)" class="template1"></a></li>
+									<li><a href="" ng-click="makeTemplate(2)" class="template2"></a></li>
+									<li><a href="" ng-click="makeTemplate(3)" class="template3"></a></li>
+									<li><a href="" ng-click="makeTemplate(4)" class="template4"></a></li>
+								</ul>
+							</div>
+						</div>
+						
+					</li>
+					<!-- <li><a href="" ng-click="upload()" class="kind_menu">Upload</a></li> -->
+					<li ng-show="isMission">
+						<a href="" class="kind_menu is_sub">{{ 'MISSION_LIST' | translate }}</a>
+						<div class="sub">
+							<div class="load_waypoint" ng-controller="loadWaypointController">
+								<ul>
+									<li ng-repeat="data in datas">
+										<a href="javascript:;" ng-click="listClick(data.value)">{{data.name}}</a>
+										<a href="" class="close_btn" ng-click="deleteItem(data.name)"></a>
+									</li>
+									<li ng-hide="datas.length > 0">{{ 'NOT_SAVE_MISSION_LIST' | translate }}</li>
+								</ul>
+								<div class="all_clear"><a href="" ng-click="deleteAll()">{{ 'ALL_CLEAR' | translate }}</a></div>
+							</div>
+						</div>
+						
+					</li>
+					<li ng-show="isOnline && isMission">
+						<a href="" class="kind_menu is_sub">{{ 'SAVE_MISSION' | translate }}</a>
+						<div class="sub">
+							<div class="save_waypoint" ng-controller="saveWaypointController">
+								<div>
+									<label>{{ 'NAME' | translate }}</label>
+									<input type="text" id = "input_save_waypoint" ng-model="name"/>
+								</div>
+								<div class="btn_area"><a href="javascript:;" ng-click="save()">{{ 'SAVE' | translate }}</a></div>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="info_area" ng-controller="infoAreaController" ></div>
+
+		</div>
+	</div>
+
+
+
+
+    <script src="cordova.js"></script>
+   
+   <!-- build:js scripts/jquery.js -->
+    <script src="kind/base_components/jquery/jquery.js"></script>
+    <!-- endbuild -->
+
+    <!-- build:js scripts/angular.js -->
+    <script src="kind/base_components/angular/angular.js"></script>
+    <!-- endbuild -->
+
+    <!-- build:js scripts/base_components.js -->
+    <script src="kind/base_components/jquery-ui/jquery-ui.js"></script>
+    <script src="kind/base_components/jquery-ui-rotatable/jquery.ui.rotatable.js"></script>
+    <!-- <script src="kind/base_components/angular-route/angular-route.js"></script> -->
+     <script src="kind/base_components/angular-translate/angular-translate.min.js"></script>
+    <script src="kind/base_components/jquery.rotate-master/jquery.rotate.js"></script>
+    <script src="kind/rich_components/kindRotatable/kindRotatable.js"></script>
+    <script src="kind/rich_components/kindDraggable/kindDraggable.js"></script>
+    <script src="kind/rich_components/kindSideMenu/kindSideMenu.js"></script>
+    <script src="kind/base_components/jquery-ui/resizable-rotation.patch.js"></script>
+    <script src="kind/base_components/jquery-ui-touch/jquery.ui.touch-punch.js"></script>
+   
+    <script src="kind/base_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
+    <!-- endbuild -->
+
+    <!-- build:js scripts/common_modules.js-->
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/run.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/sylvester.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/glUtils.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/util.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/worker.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/rgbcanvas.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/canvas.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/kind_stream.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/stream_receiver.js"></script>
+    <script src="kind/common_modules/kind_client_cm_h264-dcd/stream_module.js"></script>
+    
+    <script src="kind/common_modules/kind_client_cm_extn-if-snp/sunapi_parser.js"></script>
+    <script src="kind/common_modules/kind_client_cm_extn-if-snp/sunapi.js"></script>
+    <script src="kind/common_modules/kind_client_cm_extn-if-snp/overlay_controller.js"></script>
+    <script src="kind/common_modules/kind_client_cm_extn-if-snp/audio_controller.js"></script>
+	
+    <script src="kind/common_modules/kind_client_cm_strm-display/display_factory.js"></script>
+    <script src="kind/common_modules/kind_client_cm_strm-display/display_directive.js"></script>
+	<!-- endbuild-->
+    
+	<script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
+    <!-- build:js scripts/bases.js -->
+    <script src="scripts/kind.js"></script>
+    <script src="scripts/config/config.js"></script>
+    <script src="scripts/config/util.js"></script>
+    <script src="scripts/filters/commonFilter.js"></script>
+    <!-- endbuild -->
+       
+    <!-- build:js scripts/kind_components.js -->
+     <script src="kind/rich_components/googleMapMarkerLabel/markerLabel.js"></script>
+     <script src="kind/rich_components/rest_client/rest_client.js"></script>
+     <script src="kind/rich_components/rest_client/rest_client.config.js"></script>
+	<script src="kind/rich_components/util/util.js"></script>
+	<script src="kind/rich_components/modal/modalService.js"></script>
+	<script src="kind/rich_components/multi_language/multi_language.js"></script>
+     <script src="kind/rich_components/multi_language/multi_language.config.js"></script>
+    <!-- endbuild -->
+	
+	<!-- build:js scripts/config.js -->
+	<script src="scripts/config/broadcastApi.js"></script>
+	<!-- endbuild -->
+	
+	<!-- build:js scripts/service.js -->
+	<script src="scripts/services/socketManagerService.js"></script>
+	<script src="scripts/services/dashboardService.js"></script>
+	<script src="scripts/services/droneControllService.js"></script>
+	<script src="scripts/services/viewSwapService.js"></script>
+	<script src="scripts/services/mapService.js"></script>
+	<script src="scripts/services/gyroscopeService.js"></script>
+	<script src="scripts/services/mapManager.js"></script>
+	<script src="scripts/services/DroneInMap.js"></script>
+	<script src="scripts/services/TemplateService.js"></script>
+	<script src="scripts/services/joystickService.js"></script>
+	<script src="scripts/services/bankBoardService.js"></script>
+	<script src="scripts/services/verticalSpeedService.js"></script>
+	<script src="scripts/services/controllerDataPool.js"></script>
+	<script src="scripts/services/droneModel.js"></script>
+	<script src="scripts/services/sendDataService.js"></script>
+	<script src="scripts/services/SendProtocol.js"></script>
+	<script src="scripts/services/popupManager.js"></script>
+	<script src="scripts/services/toastService.js"></script>
+	<!-- endbuild -->
+	
+	<!-- build:js scripts/controller.js -->
+	<script src="scripts/controllers/home/wrapController.js"></script>
+	<script src="scripts/controllers/common/alertPopController.js"></script>
+	<script src="scripts/controllers/common/confirmPopController.js"></script>
+	<script src="scripts/controllers/common/resultPopController.js"></script>
+	<script src="scripts/controllers/common/toastPopController.js"></script>
+	<script src="scripts/controllers/common/headerController.js"></script>
+	<script src="scripts/controllers/setting/settingController.js"></script>
+	<script src="scripts/controllers/login/loginController.js"></script>
+	<script src="scripts/controllers/flightPlan/flightPlanController.js"></script>
+	<script src="scripts/controllers/flightPlan/mainMapController.js"></script>
+	<script src="scripts/controllers/flightPlan/infoAreaController.js"></script>
+	<script src="scripts/controllers/flightPlan/mapBtnAreaController.js"></script>
+	<script src="scripts/controllers/flightPlan/pointSettingController.js"></script>
+	<script src="scripts/controllers/flightPlan/loadWaypointController.js"></script>
+	<script src="scripts/controllers/flightPlan/saveWaypointController.js"></script>
+	<script src="scripts/controllers/flightPlan/templateAreaController.js"></script>
+	<script src="scripts/controllers/flightPlan/commandBtnAreaController.js"></script>
+	<script src="scripts/controllers/flightPlan/testController.js"></script>
+	<!-- endbuild -->
+	
+
+	<!-- build:js scripts/init.js -->
+	<script src="scripts/init/init.js"></script>
+	<!-- endbuild -->
+</body>
+</html>

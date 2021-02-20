@@ -1,0 +1,3 @@
+kindFramework.controller('infoAreaController', function(){
+	
+});

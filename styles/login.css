@@ -1,0 +1,79 @@
+
+.login_wrap{background:#ababab; height:100%;}
+
+.login_wrap > .top_logo{
+	background:url("../images/login/logo_bg.png") no-repeat 50% top; height:50%;  background-size: 100%;
+}
+.login_wrap > .content{width:30%; margin:2% auto; max-width:320px; }
+
+.login_wrap > .content input[type=text],
+.login_wrap > .content input[type=password]{
+	width:65%; height:35px; background-color:#fff; border:1px solid #7f7f7f;
+	text-indent: 10px; color:#a1a1a1; margin-bottom:8px;
+	-webkit-appearance: none; padding:0;
+  	-webkit-border-radius: 0;
+}
+
+.login_wrap > .content .ip_port{
+ padding:5px 0;overflow: hidden;
+}
+.login_wrap > .content .ip_port input{float:left; display: inline;}
+.login_wrap > .content .ip_port .ip{width:65%;}
+.login_wrap > .content .ip_port .port{width:32%; float:right;}
+
+.login_wrap > .content > .login{
+	position: relative; 
+}
+
+.login_wrap > .content > .login .btn{
+	position: absolute; right:0px; top:0px;
+	width:32%; height:86px; line-height: 86px; 
+}
+.login_wrap > .content > .login .btn a{
+	background-color: #2b2e35;
+	font-size: 19px; color:#fff; text-align: center; display: block;
+}
+
+.login_wrap > .content > .setting{
+	margin-top:3%;
+}
+.login_wrap > .content > .setting:after{clear:both; content:""; display:block;}
+
+.login_wrap > .content > .setting label{
+	color:#373941; font-size:12px;
+}
+.login_wrap > .content > .setting input[type=checkbox]{
+	width:15px; height:15px; background-color:#fff; border:1px solid #7f7f7f;
+}
+
+.login_wrap > .content > .setting li{float: left; display: inline;}
+
+.login_wrap > .content > .setting .btn_setting{
+	float:right;
+}
+
+.login_wrap > .content > .setting .btn_setting a{
+	width:103px; height:28px; line-height:28px; text-align: center; background-color:#898a90; border-radius: 30px;
+	display: block; color:#fff; font-size:12px;
+}
+
+.login_wrap > .content > .set_language{
+	text-align: right;
+	margin-top:6px;
+}
+.login_wrap > .content > .set_language > select{width:100px; height:25px; line-height:25px; font-size:13px; border-radius: 5px; text-align: right;}
+.login_wrap > .content > .set_language > select > option{text-align: right;font-size:13px;}
+
+.login_wrap .logo_copyright{
+	clear:both; text-indent: -9999px; max-width:320px; height:67px; margin-top:5%;
+	background:url("../images/login/logo_copyright.png") no-repeat; background-size: 100%;
+}
+
+
+
+@media screen and (max-width: 850px ) {
+	.login_wrap > .content > .login .btn a{font-size:12px;}
+	.login_wrap > .content input[type=text], .login_wrap > .content input[type=password]{height:25px; line-height:25px;}
+	.login_wrap > .content > .login .btn{height:61px; line-height:61px;}
+	.login_wrap > .top_logo{height:30%;}
+}
