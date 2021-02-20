@@ -11,9 +11,6 @@ var kindFramework = angular.module(
     [
         /*'ngRoute',*/
          'pascalprecht.translate',
-          'kindStreamModule',
-         'kindSunapiModule',
-         'KindDisplayModule'
     ]
 );
 
